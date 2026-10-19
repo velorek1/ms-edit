@@ -1,24 +1,28 @@
 # MS-EDIT Linux
 
-Editor de texto para terminal Linux inspirado en **MS-DOS Editor 2.0.026**.
-Versión **0.4**, preparada el 19 de octubre de 2026 a partir de la entrega
-0.3.1-dev. Conserva sus menús, selección con ratón, varios documentos y ventanas
-divididas. La implementación es nueva, escrita en C; no es el código fuente
-original de Microsoft ni una decompilación completa o un clon idéntico.
+A Linux terminal text editor inspired by **MS-DOS Editor 2.0.026**.
 
-## Compilar y ejecutar
+Version **0.4**, released on 19 October 2026, based on the 0.3.1-dev release. It retains the original editor's menus, mouse selection, multiple documents and split windows. The implementation is new and written in C; it is neither Microsoft's original source code nor a complete decompilation or exact clone of the original program.
 
-Necesitas Linux, un compilador C (GCC o Clang), GNU Make y un terminal compatible
-con secuencias ANSI/xterm. No se necesitan ncurses, bibliotecas externas,
-compiladores DOS, emuladores ni archivos de ayuda. Tamaño mínimo: **75×24**.
+## Building and running
+
+Requirements:
+
+- Linux
+- A C compiler (GCC or Clang)
+- GNU Make
+- An ANSI/xterm-compatible terminal
+
+No ncurses, external libraries, DOS compilers, emulators or help files are required.
+
+Minimum terminal size: **75×24**.
 
 ```sh
 make
 ./editr DEMOES.TXT
 ```
 
-`make` genera `editr` en la raíz del proyecto. Python 3 solo es necesario para
-las pruebas de interfaz, no para compilar ni ejecutar el editor.
+`make` builds the `editr` executable in the project root. Python 3 is only required for interface tests, not for building or running the editor.
 
 ```sh
 make test
@@ -26,168 +30,161 @@ make clean
 make CC=clang
 ```
 
-El Makefile usa C89 estricto y avisos como errores por defecto. Puedes sustituir
-las opciones con `make CFLAGS='-std=c89 -Wall -Wextra -O2'`.
+The Makefile uses strict C89 and treats warnings as errors by default. You can override the compiler flags with:
 
-## Uso y atajos
+```sh
+make CFLAGS='-std=c89 -Wall -Wextra -O2'
+```
 
-Pulsa **F1** para abrir la ayuda integrada; también está en Help → Commands y
-en el selector de archivos. **Escape**, desde la edición, sale igual que Alt+X:
-si hay cambios, pregunta si quieres guardar, descartar o cancelar. Dentro de un
-menú o diálogo, Escape cierra o cancela ese diálogo y vuelve al editor.
+## Usage and keyboard shortcuts
 
-| Acción | Tecla o menú |
+Press **F1** to open the integrated help. It is also available through Help → Commands and the file selector.
+
+When editing, **Escape** behaves like Alt+X and initiates the normal exit procedure. If there are unsaved changes, the editor asks whether to save, discard or cancel. Inside a menu or dialog, Escape closes or cancels that interface and returns to the editor.
+
+| Action | Key or menu |
 |---|---|
-| Ayuda | F1 |
-| Menús | F10; Alt+F/E/S/V/O/H |
-| Guardar | F2; File → Save |
-| Nuevo, abrir, guardar como, cerrar | Menú File |
-| Salir | Escape; Alt+X |
-| Seleccionar | Mayús + movimiento; arrastrar con el ratón |
-| Copiar, cortar, pegar | Ctrl+C, Ctrl+X, Ctrl+V |
-| Buscar | Ctrl+Q y después F; Search → Find |
-| Repetir búsqueda | F3 |
-| Reemplazar | Ctrl+Q y después A; Search → Replace |
-| Documento anterior/siguiente por número | Alt+1…9 |
-| Siguiente documento o vista | F6 |
-| Dividir / ajustar / cerrar división | Ctrl+F6 / Ctrl+F8 / Ctrl+F4 |
-| Mover por palabras / inicio y final del documento | Ctrl+Izquierda/Derecha / Ctrl+Inicio/Fin |
-| Inserción o sobrescritura | Insert |
-| Navegar en diálogos | Tab, Mayús+Tab, flechas; Enter confirma |
+| Help | F1 |
+| Menus | F10; Alt+F/E/S/V/O/H |
+| Save | F2; File → Save |
+| New, open, save as, close | File menu |
+| Exit | Escape; Alt+X |
+| Select text | Shift + movement; mouse dragging |
+| Copy, cut, paste | Ctrl+C, Ctrl+X, Ctrl+V |
+| Find | Ctrl+Q, then F; Search → Find |
+| Find next | F3 |
+| Replace | Ctrl+Q, then A; Search → Replace |
+| Switch to document by number | Alt+1…9 |
+| Next document or view | F6 |
+| Split / resize / close split | Ctrl+F6 / Ctrl+F8 / Ctrl+F4 |
+| Move by words / document start and end | Ctrl+Left/Right / Ctrl+Home/End |
+| Insert / overwrite mode | Insert |
+| Navigate dialogs | Tab, Shift+Tab, arrow keys; Enter to confirm |
 
-El portapapeles es interno. El pegado desde el terminal admite *bracketed paste*;
-Ctrl+V pega el contenido copiado dentro del editor. Algunos entornos reservan
-atajos de teclado antes de que lleguen al programa.
+The clipboard is internal to the editor. Terminal pasting supports *bracketed paste*, while Ctrl+V pastes text copied within the editor. Some terminal environments intercept keyboard shortcuts before they reach the application.
+
+### Command-line options
 
 ```sh
 ./editr --help
-./editr -R archivo.txt            # Solo lectura
-./editr -R uno.txt -W dos.txt     # Opciones para los archivos siguientes
-./editr -70 datos.bin            # Vista binaria, 70 bytes por fila
-./editr -16 datos.bin -0 notas.txt
-./editr -B notas.txt             # Monocromo
-./editr -- -nombre-con-guion.txt
-./editr '*.txt'                  # Comodín interpretado por el editor
+./editr -R file.txt             # Read-only
+./editr -R one.txt -W two.txt   # Options apply to subsequent files
+./editr -70 data.bin            # Binary view, 70 bytes per row
+./editr -16 data.bin -0 notes.txt
+./editr -B notes.txt            # Monochrome
+./editr -- -filename-with-dash.txt
+./editr '*.txt'                 # Wildcard interpreted by the editor
 ```
 
-Las opciones actuales empiezan por `-`: `-B`, `-R`, `-W`, `-<ancho>`, `-0`,
-`-h` y `--help`. `--` termina las opciones. Las rutas que empiezan por `/` siempre
-son rutas Linux. Se han retirado `/H` (filas DOS) y `/S` (nombres cortos), que no
-tenían efecto útil en Linux. El ancho binario se limita a 1021; los números
-muy grandes ya no se truncan a 16 bits. Los filtros mantienen la comparación
-ASCII sin distinguir mayúsculas y el comportamiento histórico de `*.*`, que
-incluye nombres sin extensión.
+Supported options begin with `-`:
 
-## Comportamiento y límites que conviene conocer
+- `-B`: monochrome mode
+- `-R`: read-only mode
+- `-W`: writable mode
+- `-<width>`: binary view width
+- `-0`: text mode
+- `-h`, `--help`: command-line help
+- `--`: terminates option processing
 
-- **El guardado en modo texto normaliza a CRLF y añade un salto final si el
-  documento no está vacío y carece de él.** Se conserva el comportamiento de
-  0.3.1; no se ha cambiado a LF en esta limpieza. Usa modo binario cuando
-  necesites conservar todos los bytes y los finales de línea.
-- Hasta nueve documentos y 16 MiB por documento. Las rutas están limitadas a
-  259 bytes. No hay deshacer/rehacer.
-- UTF-8 y caracteres españoles, con conversión CP437 para archivos que no
-  validan como UTF-8. No se garantiza un tratamiento completo de grafemas,
-  caracteres combinados, emoji o todas las anchuras de terminal. La búsqueda
-  sin distinguir mayúsculas no implementa todos los casos Unicode.
-- Tabuladores y colores se configuran para la sesión; no hay configuración
-  persistente. La impresión permanece desactivada.
-- Los documentos de más de 96 KiB usan almacenamiento temporal en `TEMP`,
-  después `TMP`, o en el directorio actual. El temporal puede crecer con las
-  ediciones y no se compacta durante la sesión. No hay recuperación automática
-  tras un cierre forzado.
-- El guardado prepara un temporal y un respaldo en el directorio del destino.
-  Comprueba errores de escritura, cierre y renombrado; conserva los cambios
-  pendientes cuando falla. No garantiza durabilidad ante corte eléctrico,
-  conservación de toda la metadata ni coordinación con escritores simultáneos.
+Paths beginning with `/` are always treated as Linux paths.
 
-## Origen y averiguaciones
+The DOS-specific `/H` (DOS rows) and `/S` (short filenames) options have been removed because they have no useful equivalent in Linux.
 
-Raúl Sanguiao (velorek1) propuso el experimento y aportó `edit.dec`: una
-representación de los bytes del ejecutable mediante enteros decimales con signo,
-separados por puntos. Javier Sanguiao coordinó las peticiones y entregas. El
-análisis y las pruebas de las versiones anteriores guiaron la recreación.
+Binary view widths are limited to 1021 bytes. Very large numeric arguments are no longer silently truncated to 16 bits. File filters retain their case-insensitive ASCII comparison and the historical `*.*` behaviour, which also matches filenames without extensions.
 
-Los registros conservados de ese trabajo establecen:
+## Behaviour and known limitations
 
-1. Validar el rango −128…127 y aplicar `valor & 0xff` reconstruye un ejecutable
-   MZ de **69.886 bytes**. Su SHA-256 es
-   `68047c8ede4ee93cf704bdcc5d97caa3d5a5a787726d87cb39d4db9f25fa67a8`.
-2. Los recursos identifican MS-DOS Editor 2.0.026, copyright Microsoft de 1995
-   y un runtime Microsoft de 1992. Esto no identifica la versión exacta del
-   compilador. Borland C++ 3.1 fue un objetivo de la antigua recreación DOS,
-   no un compilador demostrado para el original.
-3. El desempaquetado EXEPACK produce una imagen de **62.480 bytes**, con
-   **40 bloques** y **14 reubicaciones**, y entrada relativa **0000:0718**.
-   La validación histórica ejecutó el stub original con Unicorn en tres bases
-   de carga y comparó la imagen completa con el desempaquetador Python.
-   Verificar el stub no equivale a verificar todo el editor.
-4. Se localizaron **248 recursos**. Sus offsets son relativos a cada entrada
-   de la tabla, no a una base común. Los menús, textos y controles ayudaron a
-   entender las funciones y el aspecto del programa.
-5. El arranque y una rutina candidata a `main` se analizaron con pseudocódigo.
-   Los nombres inferidos son hipótesis; no se recuperaron todos los algoritmos
-   ni símbolos originales.
+- **Normal text-mode saving converts line endings to CRLF and appends a final newline if a non-empty document does not already have one.** This preserves the behaviour of version 0.3.1; this release does not switch to LF line endings. Use binary mode when you need to preserve the exact original bytes and line endings.
+- Up to nine documents can be open simultaneously, with a maximum size of 16 MiB per document. File paths are limited to 259 bytes. Undo and redo are not implemented.
+- UTF-8 and Spanish characters are supported, with CP437 conversion for files that are not valid UTF-8. Full support for grapheme clusters, combining characters, emoji and every terminal display width is not guaranteed. Case-insensitive searching does not implement all Unicode cases.
+- Tab width and colours are configurable for the current session, but settings are not saved between sessions. Printing remains disabled.
+- Documents larger than 96 KiB use temporary storage in `TEMP`, then `TMP`, or the current directory as a fallback. Temporary files may grow as edits accumulate and are not compacted during the session. There is no automatic recovery after a forced termination.
+- Saving prepares a temporary file and a backup in the destination directory. Write, close and rename errors are checked, and pending changes are preserved if saving fails. The implementation does not guarantee durability against power loss, preservation of all file metadata or coordination with simultaneous writers.
 
-La documentación histórica resumida está en [docs/ORIGIN.md](docs/ORIGIN.md).
-Este paquete no incluye el ejecutable de Microsoft, `edit.dec`, imágenes DOS,
-compiladores antiguos ni volcados de código máquina. Compilar y probar esta
-versión es independiente del material de referencia.
+## Origin and research
 
-## Decisiones técnicas
+The project began with an experiment proposed by **Raúl Sanguiao (velorek1)**, who supplied `edit.dec`: a text representation of the original executable's bytes, encoded as signed decimal integers separated by dots.
 
-El núcleo utiliza un **gap buffer** para documentos pequeños. Para los mayores
-combina un archivo temporal, una lista de fragmentos y una caché de 4 KiB. Son
-decisiones nuevas, no estructuras demostradas en el original. Las vistas
-comparten documento pero conservan sus posiciones de cursor y desplazamiento.
+**Javier Sanguiao** coordinated the development process, working with the AI coding assistant Kai to investigate the original executable, explore its internal structures and progressively reconstruct its functionality.
 
-El backend Linux usa `termios`, pseudo-eventos de teclado/ratón y secuencias ANSI.
-Redibuja las celdas que cambian y adapta la pantalla al tamaño del terminal.
-Se conserva CP437 para los caracteres heredados y la estética de la interfaz.
+Analysis of the executable and findings from earlier development stages provided the reference for the new implementation.
 
-La versión 0.4 elimina `dos.c`, las ramas Borland, los punteros `huge`, las APIs
-DOS de directorios y unidades, los scripts BAT y las herramientas de compilación
-DOS. La ayuda es texto integrado en C y no busca `EDIT.HLP`. La salida con Escape
-reutiliza la ruta de Alt+X y sus confirmaciones, sin duplicar la lógica de guardado.
+The preserved research established the following:
 
-| Archivo | Responsabilidad |
+1. Validating the range −128…127 and applying `value & 0xff` reconstructs a 69,886-byte MZ executable. Its SHA-256 is `68047c8ede4ee93cf704bdcc5d97caa3d5a5a787726d87cb39d4db9f25fa67a8`.
+2. The resources identify MS-DOS Editor 2.0.026, copyright Microsoft 1995, and a Microsoft runtime from 1992. They do not establish the exact compiler version. Borland C++ 3.1 was a target for the earlier DOS reconstruction, not a verified compiler for the original.
+3. EXEPACK decompression produces a 62,480-byte image containing 40 blocks and 14 relocations, with a relative entry point of `0000:0718`. Historical validation executed the original stub using Unicorn at three load addresses and compared the resulting image against an independent Python decompressor. Verifying the stub does not amount to verifying the entire editor.
+4. A total of 248 resources were identified. Their offsets are relative to individual resource-table entries rather than a shared base address. Menus, strings and controls helped establish the original program's interface and functionality.
+5. The startup code and a candidate `main` routine were examined using decompiled pseudocode. Inferred function names remain hypotheses; the original algorithms and symbols were not fully recovered.
+
+A summary of the historical research is available in [docs/ORIGIN.md](docs/ORIGIN.md).
+
+This Linux release does not include Microsoft's original executable, `edit.dec`, DOS images, legacy compilers or machine-code dumps. Building and testing the new editor does not require any of these reference materials.
+
+## Technical design
+
+The editor core uses a **gap buffer** for smaller documents. Larger documents combine temporary-file storage, a fragment list and a 4 KiB cache. These are new implementation choices, not structures demonstrated to exist in the original editor.
+
+Multiple views can share the same document while maintaining independent cursor positions and scroll offsets.
+
+The Linux backend uses `termios`, keyboard and mouse pseudo-events, and ANSI terminal sequences. It redraws changed cells and adapts to the terminal's current dimensions. CP437 support is retained for legacy characters and the original interface's visual style.
+
+Version 0.4 removes `dos.c`, Borland-specific code paths, `huge` pointers, DOS directory and drive APIs, BAT scripts and DOS build tools.
+
+The help system is now embedded directly in the C source code and no longer looks for `EDIT.HLP`. Escape-based exit reuses the same exit and confirmation logic as Alt+X, avoiding duplicated save-handling code.
+
+### Source code organisation
+
+| File | Responsibility |
 |---|---|
-| `src/buffer.c` | Documento, almacenamiento, búsqueda y E/S |
-| `src/editor.c` | Interacción, menús, ayuda, documentos y vistas |
-| `src/host.c` | Terminal Linux, entrada, ratón y dibujo |
-| `src/files.c` | Rutas, enumeración y filtros |
-| `src/cli.c` | Argumentos de línea de comandos |
-| `src/utf8.c` | Decodificación y conversión de caracteres |
-| `tests/` | Pruebas C y de interfaz real mediante pseudo-terminal |
+| `src/buffer.c` | Document model, storage, searching and I/O |
+| `src/editor.c` | Interaction, menus, help, documents and views |
+| `src/host.c` | Linux terminal, input, mouse and rendering |
+| `src/files.c` | Paths, directory enumeration and filters |
+| `src/cli.c` | Command-line arguments |
+| `src/utf8.c` | Character decoding and conversion |
+| `tests/` | C tests and real interface tests using a pseudo-terminal |
 
-![Ayuda integrada a 75×24](docs/help.png)
+![Integrated help at 75×24](docs/help.png)
 
-## Autoría y créditos
+## Authorship and credits
 
-**Kai es el nombre usado por el asistente LLM de OpenAI que generó el código
-nuevo, las herramientas de análisis, las pruebas y la documentación del
-proyecto**, bajo las instrucciones de Javier y las propuestas y pruebas de Raúl.
-Esta preparación Linux también se ha realizado con ese asistente en Codex.
-Kai no es una persona ni el autor del programa histórico de Microsoft. No se
-atribuye un modelo concreto a sesiones anteriores sin un registro que lo pruebe.
+The new C implementation, analysis tools, tests and documentation were developed with the assistance of **Kai**, an OpenAI AI coding assistant, working under instructions from Javier Sanguiao and incorporating ideas, feedback and testing from Raúl Sanguiao.
 
-Raúl aportó la idea, la referencia y comentarios de uso que orientaron los
-cambios. Su proyecto C-EDIT es un trabajo independiente: esta entrega procede de
-MS-EDIT 0.3.1, no de una modificación del repositorio C-EDIT.
+The Linux port and release preparation were also carried out with AI assistance through Codex.
 
-Microsoft conserva la autoría del programa original. Este proyecto no está
-patrocinado ni aprobado por Microsoft. Consulta [NOTICE.txt](NOTICE.txt).
-No se ha elegido todavía una licencia de distribución para el código nuevo;
-esta preparación no añade una licencia en nombre de los responsables humanos.
+Raúl initiated the experiment, provided the original executable reference and contributed feedback that helped shape the editor's behaviour and interface. Javier coordinated the development and research process.
 
-## Validación de esta entrega
+The project is a new implementation inspired by MS-DOS Editor 2.0.026. It is not Microsoft's original source code, nor a complete decompilation of the original program.
 
-Compilación con GCC 13.3.0 en Linux, C89 estricto, `-pedantic -Wall -Wextra
--Werror -O2`. Pasan **cinco ejecutables de pruebas C** y **26 pruebas Python** de
-interfaz. Incluyen 8.000 ediciones aleatorias, documentos de 1 MiB, fallos de E/S,
-UTF-8 español, búsquedas, reemplazo, selección, varias vistas, ratón y resize.
-Las nuevas pruebas cubren la ayuda y Escape con guardar, cancelar o descartar.
+Raúl's separate C-EDIT project is independent of this repository. This release derives from MS-EDIT 0.3.1, not from modifications to C-EDIT.
 
-Los detalles y límites de la comprobación están en
-[docs/TESTING.md](docs/TESTING.md). No se afirma compatibilidad con todos los
-emuladores de terminal ni equivalencia total con MS-DOS Edit.
+Microsoft retains the rights to its original software. This project is neither sponsored nor endorsed by Microsoft. See [NOTICE.txt](NOTICE.txt).
+
+No distribution licence has yet been selected for the new code. This repository therefore does not claim a licence on behalf of its human contributors.
+
+## Validation
+
+Version 0.4 was compiled with GCC 13.3.0 on Linux using strict C89 and the following flags:
+
+`-pedantic -Wall -Wextra -Werror -O2`
+
+All **five C test executables** and **26 Python interface tests** pass.
+
+The tests cover:
+
+- 8,000 random editing operations
+- 1 MiB documents
+- I/O failure handling
+- Spanish UTF-8 text
+- Searching and replacing
+- Text selection
+- Multiple views
+- Mouse interaction
+- Terminal resizing
+- Integrated help
+- Escape-based exit with save, cancel and discard options
+
+Further details and testing limitations are documented in [docs/TESTING.md](docs/TESTING.md).
+
+Compatibility with every terminal emulator and complete equivalence with MS-DOS Editor are not claimed.
