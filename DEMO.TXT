@@ -1,0 +1,10 @@
+EDIT recreation - project test
+
+Reference: MS-DOS Editor 2.0.026
+Target compiler: Borland C++ 3.1
+
+F10 opens the menu. Alt+X exits.
+Shift + arrows selects text. Ctrl+C / X / V uses the clipboard.
+
+This is a new implementation under development.
+DOS compilation, mouse, split views, printing and XMS are pending.

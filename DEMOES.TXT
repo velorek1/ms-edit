@@ -1,0 +1,5 @@
+Español: á é í ó ú ñ ü ¿Qué tal? ¡Bien!
+
+Ratón: selecciona texto arrastrando.
+Terminal: cambia su tamaño para ampliar el área de edición.
+Alt+F abre Archivo; F2 guarda; Alt+X sale.

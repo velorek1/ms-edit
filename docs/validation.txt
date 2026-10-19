@@ -1,0 +1,44 @@
+make: Entering directory '/home/xankaisen/Documents/Codex/2026-10-19/tie/outputs/msedit-linux'
+cd build && ./test-storage
+PASS: disk-backed 1 MiB, cross-64KiB replacement, append, delete, save, reload
+./build/test-files
+PASS: Wildcard matching, paths, enumeration, refresh failure
+./build/test-core
+PASS: buffer, search, CRLF, tabs, 64 KiB boundary, binary I/O, 8000 random edits (150283322 checks)
+./build/test-failures
+PASS: write/close/rename/rollback failures, readonly, permissions, allocation atomicity
+./build/test-cli
+PASS: Linux options, absolute paths, per-file flags, width bounds, --
+python3 -m unittest discover -s tests -p 'test_*.py' -v
+test_bracketed_paste_is_literal_multiline_and_utf8 (test_ui.UITests.test_bracketed_paste_is_literal_multiline_and_utf8) ... ok
+test_cancel_exit_and_crlf_backspace (test_ui.UITests.test_cancel_exit_and_crlf_backspace) ... ok
+test_confirmation_mouse_and_no_button (test_ui.UITests.test_confirmation_mouse_and_no_button) ... ok
+test_cp437_file_receives_spanish_character_without_conversion (test_ui.UITests.test_cp437_file_receives_spanish_character_without_conversion) ... ok
+test_edit_clipboard_multidoc_find_save (test_ui.UITests.test_edit_clipboard_multidoc_find_save) ... ok
+test_escape_discard_and_clean_exit (test_ui.UITests.test_escape_discard_and_clean_exit) ... ok
+test_escape_exit_save_cancel_and_discard (test_ui.UITests.test_escape_exit_save_cancel_and_discard) ... ok
+test_help_from_menu_and_selector_returns_without_exiting (test_ui.UITests.test_help_from_menu_and_selector_returns_without_exiting) ... ok
+test_minimum_75x24_and_save_confirmation_buttons (test_ui.UITests.test_minimum_75x24_and_save_confirmation_buttons) ... ok
+test_mouse_selection_menu_and_save_button (test_ui.UITests.test_mouse_selection_menu_and_save_button) ... ok
+test_nine_documents_reject_tenth_and_close_shared (test_ui.UITests.test_nine_documents_reject_tenth_and_close_shared) ... ok
+test_original_control_key_navigation_and_literal_bytes (test_ui.UITests.test_original_control_key_navigation_and_literal_bytes) ... ok
+test_prompt_and_help_buttons_at_minimum_size (test_ui.UITests.test_prompt_and_help_buttons_at_minimum_size) ... ok
+test_readonly_protects_disk (test_ui.UITests.test_readonly_protects_disk) ... ok
+test_reference_like_initial_screen (test_ui.UITests.test_reference_like_initial_screen) ... ok
+test_reopening_document_preserves_unsaved_changes (test_ui.UITests.test_reopening_document_preserves_unsaved_changes) ... ok
+test_replace_all_whole_word_and_empty_file (test_ui.UITests.test_replace_all_whole_word_and_empty_file) ... ok
+test_selector_filter_directory_and_readonly (test_ui.UITests.test_selector_filter_directory_and_readonly) ... ok
+test_selector_horizontal_buttons_cancel_without_opening (test_ui.UITests.test_selector_horizontal_buttons_cancel_without_opening) ... ok
+test_split_shared_document_independent_cursors (test_ui.UITests.test_split_shared_document_independent_cursors) ... ok
+test_startup_failure_cleans_large_document_backing (test_ui.UITests.test_startup_failure_cleans_large_document_backing) ... ok
+test_terminal_resize_and_small_terminal_preserve_document (test_ui.UITests.test_terminal_resize_and_small_terminal_preserve_document) ... ok
+test_unicode_whole_word_search_avoids_inside_spanish_word (test_ui.UITests.test_unicode_whole_word_search_avoids_inside_spanish_word) ... ok
+test_utf8_spanish_input_navigation_and_filename (test_ui.UITests.test_utf8_spanish_input_navigation_and_filename) ... ok
+test_wildcard_startup_opens_multiple_documents (test_ui.UITests.test_wildcard_startup_opens_multiple_documents) ... ok
+test_xterm_key_variants_and_x10_mouse (test_ui.UITests.test_xterm_key_variants_and_x10_mouse) ... ok
+
+----------------------------------------------------------------------
+Ran 26 tests in 0.527s
+
+OK
+make: Leaving directory '/home/xankaisen/Documents/Codex/2026-10-19/tie/outputs/msedit-linux'

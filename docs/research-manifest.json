@@ -1,0 +1,348 @@
+{
+  "input": "edit.dec",
+  "size": 69886,
+  "sha256": "68047c8ede4ee93cf704bdcc5d97caa3d5a5a787726d87cb39d4db9f25fa67a8",
+  "mz": {
+    "magic": 23117,
+    "cblp": 254,
+    "cp": 137,
+    "crlc": 0,
+    "cparhdr": 461,
+    "minalloc": 1274,
+    "maxalloc": 65535,
+    "ss": 3928,
+    "sp": 128,
+    "csum": 0,
+    "ip": 16,
+    "cs": 3884,
+    "lfarlc": 30,
+    "ovno": 0,
+    "header_bytes": 7376,
+    "declared_bytes": 69886,
+    "entry_file_offset": 69536
+  },
+  "exepack": {
+    "stub_file_offset": 69520,
+    "original_cs": 0,
+    "original_ip": 1816,
+    "original_ss": 4924,
+    "original_sp": 4096,
+    "image_bytes": 62480,
+    "prefix_bytes": 61117,
+    "blocks": [
+      {
+        "kind": "fill",
+        "size": 16,
+        "command": 176,
+        "dest": 62464
+      },
+      {
+        "kind": "copy",
+        "size": 222,
+        "command": 178,
+        "dest": 62242
+      },
+      {
+        "kind": "fill",
+        "size": 18,
+        "command": 176,
+        "dest": 62224
+      },
+      {
+        "kind": "copy",
+        "size": 194,
+        "command": 178,
+        "dest": 62030
+      },
+      {
+        "kind": "fill",
+        "size": 16,
+        "command": 176,
+        "dest": 62014
+      },
+      {
+        "kind": "copy",
+        "size": 195,
+        "command": 178,
+        "dest": 61819
+      },
+      {
+        "kind": "fill",
+        "size": 29,
+        "command": 176,
+        "dest": 61790
+      },
+      {
+        "kind": "copy",
+        "size": 1,
+        "command": 178,
+        "dest": 61789
+      },
+      {
+        "kind": "fill",
+        "size": 8,
+        "command": 176,
+        "dest": 61781
+      },
+      {
+        "kind": "copy",
+        "size": 11,
+        "command": 178,
+        "dest": 61770
+      },
+      {
+        "kind": "fill",
+        "size": 8,
+        "command": 176,
+        "dest": 61762
+      },
+      {
+        "kind": "copy",
+        "size": 10,
+        "command": 178,
+        "dest": 61752
+      },
+      {
+        "kind": "fill",
+        "size": 9,
+        "command": 176,
+        "dest": 61743
+      },
+      {
+        "kind": "copy",
+        "size": 11,
+        "command": 178,
+        "dest": 61732
+      },
+      {
+        "kind": "fill",
+        "size": 14,
+        "command": 176,
+        "dest": 61718
+      },
+      {
+        "kind": "copy",
+        "size": 46,
+        "command": 178,
+        "dest": 61672
+      },
+      {
+        "kind": "fill",
+        "size": 12,
+        "command": 176,
+        "dest": 61660
+      },
+      {
+        "kind": "copy",
+        "size": 38,
+        "command": 178,
+        "dest": 61622
+      },
+      {
+        "kind": "fill",
+        "size": 8,
+        "command": 176,
+        "dest": 61614
+      },
+      {
+        "kind": "copy",
+        "size": 50,
+        "command": 178,
+        "dest": 61564
+      },
+      {
+        "kind": "fill",
+        "size": 12,
+        "command": 176,
+        "dest": 61552
+      },
+      {
+        "kind": "copy",
+        "size": 7,
+        "command": 178,
+        "dest": 61545
+      },
+      {
+        "kind": "fill",
+        "size": 65,
+        "command": 176,
+        "dest": 61480
+      },
+      {
+        "kind": "copy",
+        "size": 28,
+        "command": 178,
+        "dest": 61452
+      },
+      {
+        "kind": "fill",
+        "size": 8,
+        "command": 176,
+        "dest": 61444
+      },
+      {
+        "kind": "fill",
+        "size": 8,
+        "command": 176,
+        "dest": 61436
+      },
+      {
+        "kind": "copy",
+        "size": 4,
+        "command": 178,
+        "dest": 61432
+      },
+      {
+        "kind": "fill",
+        "size": 8,
+        "command": 176,
+        "dest": 61424
+      },
+      {
+        "kind": "copy",
+        "size": 4,
+        "command": 178,
+        "dest": 61420
+      },
+      {
+        "kind": "fill",
+        "size": 8,
+        "command": 176,
+        "dest": 61412
+      },
+      {
+        "kind": "copy",
+        "size": 4,
+        "command": 178,
+        "dest": 61408
+      },
+      {
+        "kind": "fill",
+        "size": 42,
+        "command": 176,
+        "dest": 61366
+      },
+      {
+        "kind": "copy",
+        "size": 26,
+        "command": 178,
+        "dest": 61340
+      },
+      {
+        "kind": "fill",
+        "size": 12,
+        "command": 176,
+        "dest": 61328
+      },
+      {
+        "kind": "copy",
+        "size": 1,
+        "command": 178,
+        "dest": 61327
+      },
+      {
+        "kind": "fill",
+        "size": 12,
+        "command": 176,
+        "dest": 61315
+      },
+      {
+        "kind": "copy",
+        "size": 31,
+        "command": 178,
+        "dest": 61284
+      },
+      {
+        "kind": "fill",
+        "size": 9,
+        "command": 176,
+        "dest": 61275
+      },
+      {
+        "kind": "copy",
+        "size": 1,
+        "command": 178,
+        "dest": 61274
+      },
+      {
+        "kind": "fill",
+        "size": 157,
+        "command": 177,
+        "dest": 61117
+      }
+    ],
+    "relocations": [
+      {
+        "segment": 0,
+        "offset": 17498,
+        "linear": 17498
+      },
+      {
+        "segment": 0,
+        "offset": 17183,
+        "linear": 17183
+      },
+      {
+        "segment": 0,
+        "offset": 1830,
+        "linear": 1830
+      },
+      {
+        "segment": 0,
+        "offset": 2036,
+        "linear": 2036
+      },
+      {
+        "segment": 0,
+        "offset": 2066,
+        "linear": 2066
+      },
+      {
+        "segment": 0,
+        "offset": 56656,
+        "linear": 56656
+      },
+      {
+        "segment": 0,
+        "offset": 60946,
+        "linear": 60946
+      },
+      {
+        "segment": 0,
+        "offset": 7200,
+        "linear": 7200
+      },
+      {
+        "segment": 0,
+        "offset": 7223,
+        "linear": 7223
+      },
+      {
+        "segment": 0,
+        "offset": 7560,
+        "linear": 7560
+      },
+      {
+        "segment": 0,
+        "offset": 7676,
+        "linear": 7676
+      },
+      {
+        "segment": 0,
+        "offset": 8000,
+        "linear": 8000
+      },
+      {
+        "segment": 0,
+        "offset": 8017,
+        "linear": 8017
+      },
+      {
+        "segment": 0,
+        "offset": 39098,
+        "linear": 39098
+      }
+    ]
+  },
+  "image_sha256": "830fca69294d5f18df2491a56c279486b31cd8ff7499505782178a2c77267dc9"
+}

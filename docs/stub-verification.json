@@ -1,0 +1,26 @@
+[
+  {
+    "load_segment": "0x1000",
+    "compared_bytes": 62480,
+    "relocations": 14,
+    "entry_reached": true,
+    "byte_exact": true,
+    "relocated_sha256": "c0db1b2731cea76ada802147a4875e327210e5d272c44c189d7e4d083c4c1c63"
+  },
+  {
+    "load_segment": "0x2345",
+    "compared_bytes": 62480,
+    "relocations": 14,
+    "entry_reached": true,
+    "byte_exact": true,
+    "relocated_sha256": "439d764eb8655683323e69345678bec90b0ae81a87c5004fabd67d4c9bc82406"
+  },
+  {
+    "load_segment": "0x7000",
+    "compared_bytes": 62480,
+    "relocations": 14,
+    "entry_reached": true,
+    "byte_exact": true,
+    "relocated_sha256": "676bdf0156114af6335141f651944165628cfd3d3def558b9f56a2d923646ded"
+  }
+]

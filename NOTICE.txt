@@ -1,0 +1,13 @@
+MS-EDIT Linux contains a newly written editor implementation and tests generated
+by Kai, an OpenAI LLM assistant, under Javier Sanguiao's direction, with the
+project proposal, reference and user feedback supplied by Raúl Sanguiao.
+
+This is not recovered Microsoft source code, an official Microsoft product,
+or a claim to ownership of the original MS-DOS Editor. Microsoft names and
+historical program identifiers are used to describe the research reference.
+
+The original executable, decimal byte dump, extracted machine-code images,
+DOS operating systems and Borland toolchain are not included in this package.
+
+No distribution license for the newly written code has been selected in this
+preparation. This notice is attribution and provenance, not a license grant.
