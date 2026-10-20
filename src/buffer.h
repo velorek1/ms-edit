@@ -22,7 +22,7 @@ typedef struct {
     unsigned long cap, gap_lo, gap_hi;
     int modified, readonly,utf8;
     unsigned long cursor, anchor, top, left;
-    unsigned long line_cache_pos,line_cache_number;
+    unsigned long line_cache_pos,line_cache_number,newlines;
     unsigned binary_width;
     char path[ED_PATH];
 } Buffer;

@@ -252,7 +252,7 @@ static void move_gap(Buffer *b,unsigned long p)
 int buf_replace(Buffer *b,unsigned long at,unsigned long count,
                 ConstBytePtr s,unsigned long n)
 {
-    unsigned long len,i,cache_pos,cache_number;
+    unsigned long len,i,cache_pos,cache_number,newlines;
     struct Store *store;
     int e;
     if (b->readonly) return ED_READONLY;
@@ -260,6 +260,9 @@ int buf_replace(Buffer *b,unsigned long at,unsigned long count,
     if (at>len || count>len-at || (n && !s)) return ED_RANGE;
     if (n>ED_MAX_BYTES || len-count>ED_MAX_BYTES-n) return ED_LIMIT;
     if (!count && !n) return ED_OK;
+    newlines=b->newlines;
+    for (i=0;i<count;i++) if (buf_get(b,at+i)=='\n') newlines--;
+    for (i=0;i<n;i++) if (s[i]=='\n') newlines++;
     cache_pos=b->line_cache_pos;cache_number=b->line_cache_number;
     if (cache_number && cache_pos>=at+count) {
         for (i=0;i<count;i++) if (buf_get(b,at+i)=='\n') cache_number--;
@@ -279,6 +282,7 @@ int buf_replace(Buffer *b,unsigned long at,unsigned long count,
         if (e) return e;
     }
     if (e) return e;
+    b->newlines=newlines;
     b->line_cache_pos=cache_pos;b->line_cache_number=cache_number;
     if (b->store) { b->cursor=b->anchor=at+n;b->modified=1;return ED_OK; }
     move_gap(b,at);
@@ -339,7 +343,7 @@ int buf_load(Buffer *b,const char *path,int readonly,unsigned width)
     return ED_OK;
 }
 
-/* Buffered emission permits text CRLF conversion without another document copy. */
+/* Buffered emission permits text LF conversion without another document copy. */
 static int save_byte(FILE *f,unsigned char *block,unsigned *used,int ch)
 {
     block[(*used)++]=(unsigned char)ch;
@@ -398,12 +402,12 @@ int buf_save(Buffer *b,const char *path)
     for (i=0;i<len && !e;i++) {
         int ch=buf_get(b,i);
         if (ch<0 || buf_io_error(b)) { e=ED_IO;break; }
-        if (!b->binary_width && ch=='\n' && (!i || buf_get(b,i-1)!='\r'))
-            e=save_byte(f,block,&j,'\r');
+        /* Strip only CR belonging to CRLF; preserve standalone CR bytes. */
+        if (!b->binary_width && ch=='\r' && i+1<len && buf_get(b,i+1)=='\n')
+            continue;
         if (!e) e=save_byte(f,block,&j,ch);
     }
     if (!e && !b->binary_width && len && buf_get(b,len-1)!='\n') {
-        if (buf_get(b,len-1)!='\r') e=save_byte(f,block,&j,'\r');
         if (!e) e=save_byte(f,block,&j,'\n');
     }
     if (buf_io_error(b)) e=ED_IO;

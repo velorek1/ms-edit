@@ -86,6 +86,68 @@ class UITests(unittest.TestCase):
         self.session=Session(*args)
         return self.session
 
+    def test_scrollbar_drag_endpoints_and_release(self):
+        a=self.directory/'SCROLL.TXT'
+        original=b''.join(f'{i:03d} line\n'.encode() for i in range(100))
+        a.write_bytes(original)
+        s=self.launch(a)
+        self.assertIn('█'.encode(),s.output)
+        self.assertIn('▓'.encode(),s.output)
+        # 101 logical lines, 22 visible: bottom viewport starts at line 80.
+        # Grab at the thumb's top, move outside the column, then release.
+        s.send(b'\x1b[<0;80;4M\x1b[<32;75;40M\x1b[<0;75;40m')
+        s.send(b'X\x1bfs')
+        expected=original.replace(b'079 line',b'X079 line')
+        s.file_is(a,expected)
+        # A released motion must not keep scrolling.
+        s.send(b'\x1b[<35;80;4M' + b'Y\x1bfs')
+        expected=expected.replace(b'X079',b'XY079')
+        s.file_is(a,expected)
+        # Grab the bottom thumb and drag above the track.
+        s.send(b'\x1b[<0;80;20M\x1b[<32;80;1M\x1b[<0;80;1mZ\x1bfs')
+        s.file_is(a,b'Z'+expected)
+        s.exit()
+
+    def test_scrollbar_empty_short_split_and_resize(self):
+        a=self.directory/'SHORT.TXT';a.write_bytes(b'abc\n')
+        s=self.launch(a)
+        s.send(b'\x1b[<0;80;10M\x1b[<32;80;23M\x1b[<0;80;23mX\x1bfs')
+        s.file_is(a,b'Xabc\n')
+        s.send(b'\x1b[17;5~')
+        fcntl.ioctl(s.master,termios.TIOCSWINSZ,struct.pack('HHHH',30,100,0,0))
+        s.process.send_signal(signal.SIGWINCH)
+        s.send(b'\x1b[<0;100;16M\x1b[<32;100;28M\x1b[<0;100;28mY\x1bfs')
+        s.file_is(a,b'YXabc\n')
+        s.exit()
+
+    def test_scrollbar_track_arrows_and_empty(self):
+        a=self.directory/'TRACK.TXT'
+        original=b''.join(f'{i:03d}\n'.encode() for i in range(100))
+        a.write_bytes(original);s=self.launch(a)
+        # Track bottom click, down arrow clamps, up arrow moves one line.
+        s.send(b'\x1b[<0;80;23M\x1b[<0;80;23m')
+        s.send(b'\x1b[<0;80;24M\x1b[<0;80;24m')
+        s.send(b'\x1b[<0;80;3M\x1b[<0;80;3mX\x1bfs')
+        s.file_is(a,original.replace(b'078',b'X078'));s.exit()
+        s.close();self.session=None
+        a.write_bytes(b'');s=self.launch(a)
+        s.send(b'\x1b[<0;80;10M\x1b[<32;80;40M\x1b[<0;80;40m\x1bfs')
+        s.file_is(a,b'');s.exit()
+
+    def test_scrollbar_binary_rows(self):
+        a=self.directory/'ROWS.BIN';original=b'0123456789'*100;a.write_bytes(original)
+        s=self.launch('-10',a)
+        s.send(b'\x1b[<0;80;4M\x1b[<32;80;40M\x1b[<0;80;40mX\x1bfs')
+        s.file_is(a,original[:790]+b'X'+original[790:]);s.exit()
+
+    def test_scrollbar_smallest_split(self):
+        a=self.directory/'TINY.TXT';a.write_bytes(b'a\nb\nc\nd\n')
+        s=self.launch(a)
+        # Split, drag divider to its minimum: top pane has only two rows.
+        s.send(b'\x1b[17;5~\x1b[<0;20;13M\x1b[<32;20;5M\x1b[<0;20;5m')
+        s.send(b'\x1b[<0;80;4M\x1b[<0;80;4mX\x1bfs')
+        s.file_is(a,b'a\nXb\nc\nd\n');s.exit()
+
     def test_escape_exit_save_cancel_and_discard(self):
         a=self.directory/'ESC.TXT';a.write_bytes(b'old')
         s=self.launch(a)
@@ -97,7 +159,7 @@ class UITests(unittest.TestCase):
         s.send(b'y')
         s.wait(lambda:s.process.poll() is not None)
         self.assertEqual(s.process.returncode,0)
-        self.assertEqual(a.read_bytes(),b'newold\r\n')
+        self.assertEqual(a.read_bytes(),b'newold\n')
 
     def test_escape_discard_and_clean_exit(self):
         a=self.directory/'DISCARD.TXT';a.write_bytes(b'old')
@@ -128,16 +190,16 @@ class UITests(unittest.TestCase):
         a=self.directory/'A.TXT';b=self.directory/'B.TXT'
         s=self.launch(a)
         s.send(b'alpha\rbeta\r\x1bfs')
-        s.file_is(a,b'alpha\r\nbeta\r\n')
+        s.file_is(a,b'alpha\nbeta\n')
         s.send(b'\x1b[1;5H\x1b[1;6F\x03\x1bfn\x16\x1bfs',b'File Name:')
         s.send(str(b).encode()+b'\r')
-        s.file_is(b,b'alpha\r\nbeta\r\n')
+        s.file_is(b,b'alpha\nbeta\n')
         s.send(b'\x1b1\x1b[1;5H\x11f',b'Find What:')
         s.send(b'beta\r',b'Match case?')
         s.send(b'n',b'Match whole word only?')
         s.send(b'nBETA\x1bfs')
-        s.file_is(a,b'alpha\r\nBETA\r\n')
-        self.assertEqual(b.read_bytes(),b'alpha\r\nbeta\r\n')
+        s.file_is(a,b'alpha\nBETA\n')
+        self.assertEqual(b.read_bytes(),b'alpha\nbeta\n')
         s.send(b'\x1b[13~',b'No more matches found.')
         s.send(b'\r')
         s.exit()
@@ -155,27 +217,27 @@ class UITests(unittest.TestCase):
         a=self.directory/'WORDS.TXT';a.write_bytes('año a'.encode())
         s=self.launch(a);s.send(b'\x11f',b'Find What:')
         s.send(b'a\r',b'Match case?');s.send(b'n',b'Match whole word only?')
-        s.send(b'yZ\x1bfs');s.file_is(a,'año Z\r\n'.encode());s.exit()
+        s.send(b'yZ\x1bfs');s.file_is(a,'año Z\n'.encode());s.exit()
 
     def test_bracketed_paste_is_literal_multiline_and_utf8(self):
         a=self.directory/'PASTE.TXT';s=self.launch(a)
         payload='Español: á ñ\nsegunda línea'.encode()+b'\x0f'
         s.send(b'\x1b[200~'+payload+b'\x1b[201~\x1bfs')
-        s.file_is(a,payload.replace(b'\n',b'\r\n')+b'\r\n');s.exit()
+        s.file_is(a,payload+b'\n');s.exit()
 
     def test_xterm_key_variants_and_x10_mouse(self):
         a=self.directory/'XTERM.TXT';a.write_bytes(b'abc')
         s=self.launch(a)
         s.send(b'\x1bOFZ\x1b[1~Q\x1b[8~\x1b[241;1u\x1b[27;1;225~\x1bfs')
-        s.file_is(a,'QabcZñá\r\n'.encode())
+        s.file_is(a,'QabcZñá\n'.encode())
         # X10 press/release packets must never become document characters.
         s.send(b'\x1b[M'+bytes([32,34,35])+b'\x1b[M'+bytes([35,34,35])+b'\x1bfs')
-        s.file_is(a,'QabcZñá\r\n'.encode());s.exit()
+        s.file_is(a,'QabcZñá\n'.encode());s.exit()
 
     def test_cp437_file_receives_spanish_character_without_conversion(self):
         a=self.directory/'LEGACY.TXT';a.write_bytes(b'caf\x82')
         s=self.launch(a);s.send(b'\x1b[F'+'ñ'.encode()+b'\x1bfs')
-        s.file_is(a,b'caf\x82\xa4\r\n');s.exit()
+        s.file_is(a,b'caf\x82\xa4\n');s.exit()
 
     def test_utf8_spanish_input_navigation_and_filename(self):
         a=self.directory/'español.txt'
@@ -184,13 +246,13 @@ class UITests(unittest.TestCase):
         s.send(b'\x1b[H\x1b[C\x1b[3~')  # delete ñ as one character
         s.send('ñ'.encode()+b'\x1bfs',b'File Name:')
         s.send(str(a).encode()+b'\r')
-        s.file_is(a,'año áéíóú ü ¿Qué? ¡Sí!\r\n'.encode())
+        s.file_is(a,'año áéíóú ü ¿Qué? ¡Sí!\n'.encode())
         self.assertIn('año'.encode(),s.output)
         s.exit()
         # Reopen UTF-8 and delete the last multibyte character with Backspace.
         self.session.close();self.session=None
         s=self.launch(a);s.send(b'\x1b[H\x1b[C\x1b[C\x7f\x1bfs')
-        s.file_is(a,'ao áéíóú ü ¿Qué? ¡Sí!\r\n'.encode());s.exit()
+        s.file_is(a,'ao áéíóú ü ¿Qué? ¡Sí!\n'.encode());s.exit()
 
     def test_terminal_resize_and_small_terminal_preserve_document(self):
         a=self.directory/'RESIZE.TXT';s=self.launch(a);s.send(b'abc')
@@ -207,7 +269,7 @@ class UITests(unittest.TestCase):
         fcntl.ioctl(s.master,termios.TIOCSWINSZ,struct.pack('HHHH',30,100,0,0))
         os.kill(s.process.pid,signal.SIGWINCH)
         s.wait_for(b'\x1b[30;1H',start)
-        s.send(b'e\x1bfs');s.file_is(a,b'abcde\r\n');s.exit()
+        s.send(b'e\x1bfs');s.file_is(a,b'abcde\n');s.exit()
 
     def resize(self,s,columns,rows,expect):
         start=len(s.output)
@@ -229,7 +291,7 @@ class UITests(unittest.TestCase):
         self.resize(s,74,24,b'Resize terminal')
         self.resize(s,75,24,b'Save file')
         s.send(b'\r');s.wait(lambda:s.process.poll() is not None)
-        self.assertEqual(a.read_bytes(),b'Xold\r\n')
+        self.assertEqual(a.read_bytes(),b'Xold\n')
 
     def test_confirmation_mouse_and_no_button(self):
         a=self.directory/'MOUSECONF.TXT';a.write_bytes(b'old')
@@ -261,19 +323,19 @@ class UITests(unittest.TestCase):
         s=self.launch(a);s.send(b'\x1bfo',b'File Name:')
         # Name, files, directories, read-only, binary, OK; Right -> Cancel.
         s.send(b'\t\t\t\t\t\x1b[C\r')
-        s.send(b'X\x1bfs');s.file_is(a,b'Xold\r\n');s.exit()
+        s.send(b'X\x1bfs');s.file_is(a,b'Xold\n');s.exit()
 
     def test_reopening_document_preserves_unsaved_changes(self):
         a=self.directory/'SAME.TXT';a.write_bytes(b'abc')
         s=self.launch(a);s.send(b'X')
         s.send(b'\x1bfo',b'File Name:');s.send(str(a).encode()+b'\r')
-        s.send(b'Y\x1bfs');s.file_is(a,b'XYabc\r\n');s.exit()
+        s.send(b'Y\x1bfs');s.file_is(a,b'XYabc\n');s.exit()
 
     def test_original_control_key_navigation_and_literal_bytes(self):
         a=self.directory/'KEYS.TXT';a.write_bytes(b'abc def xyz')
         s=self.launch(a)
         s.send(b'\x1b[1;5F\x01\x13\x06Z\x1b[1;5H\x0e\x0f\x1bfs')
-        s.file_is(a,b'\x0e\x0fabc def Zxyz\r\n');s.exit()
+        s.file_is(a,b'\x0e\x0fabc def Zxyz\n');s.exit()
 
     def test_mouse_selection_menu_and_save_button(self):
         a=self.directory/'MOUSE.TXT';b=self.directory/'COPY.TXT'
@@ -285,15 +347,15 @@ class UITests(unittest.TestCase):
         s.send(b'\x1b[<0;4;1M\x1b[<0;4;1m')
         s.send(b'\x1b[<0;6;3M\x1b[<0;6;3m\x16\x1bfs',b'File Name:')
         s.send(str(b).encode()+b'\x1b[<0;23;22M\x1b[<0;23;22m')
-        s.file_is(b,b'hello\r\n');s.exit()
+        s.file_is(b,b'hello\n');s.exit()
         self.assertEqual(a.read_bytes(),b'hello world')
 
     def test_wildcard_startup_opens_multiple_documents(self):
         a=self.directory/'A.TXT';b=self.directory/'B.TXT'
         a.write_bytes(b'alpha');b.write_bytes(b'beta')
         s=self.launch(str(self.directory/'*.TXT'))
-        s.send(b'B\x1bfs');s.file_is(b,b'Bbeta\r\n')
-        s.send(b'\x1b1A\x1bfs');s.file_is(a,b'Aalpha\r\n')
+        s.send(b'B\x1bfs');s.file_is(b,b'Bbeta\n')
+        s.send(b'\x1b1A\x1bfs');s.file_is(a,b'Aalpha\n')
         s.exit()
 
     def test_selector_filter_directory_and_readonly(self):
@@ -303,7 +365,7 @@ class UITests(unittest.TestCase):
         s=self.launch(a)
         s.send(b'\x1bfo',b'File Name:')
         s.send(str(self.directory/'*.TXT').encode()+b'\r')
-        s.send(b'\t\x1b[B\rB\x1bfs');s.file_is(b,b'Bbeta\r\n')
+        s.send(b'\t\x1b[B\rB\x1bfs');s.file_is(b,b'Bbeta\n')
         s.send(b'\x1bfo',b'File Name:')
         s.send(str(c).encode()+b'\x1br\r',b'Line:1')
         s.send(b'X',b'You cannot modify a read-only file.')
@@ -329,7 +391,7 @@ class UITests(unittest.TestCase):
         # F1=Help also occurs in the modal backdrop and is not a safe barrier.
         s.send(b'\x1b',b'\x1b[?25h')
         s.send(b'\x1b[H\x7f\x1bfs')
-        s.file_is(a,b'onetwo\r\n')
+        s.file_is(a,b'onetwo\n')
         s.exit()
 
     def test_split_shared_document_independent_cursors(self):
@@ -337,13 +399,13 @@ class UITests(unittest.TestCase):
         s=self.launch(a)
         # Ctrl+F6 splits; F6 switches focus, leaving each cursor independent.
         s.send(b'\x1b[17;5~\x1b[BX\x1b[17~Y\x1b[17~Z\x1bfs')
-        s.file_is(a,b'Ya\r\nXZb\r\nc\r\n')
+        s.file_is(a,b'Ya\nXZb\nc\n')
         # Resize cancellation and closing the focused window preserve data.
         s.send(b'\x1b[19;5~',b'Use arrow keys to resize window')
         s.send(b'\x1b[A')
         s.send(b'\x1b',b'\x1b[?25h')
         s.send(b'\x1b[14;5~\x1bfs')
-        s.file_is(a,b'Ya\r\nXZb\r\nc\r\n')
+        s.file_is(a,b'Ya\nXZb\nc\n')
         s.exit()
 
     def test_nine_documents_reject_tenth_and_close_shared(self):
@@ -354,7 +416,7 @@ class UITests(unittest.TestCase):
         # Close document 9 while shown in both views; edit the surviving doc.
         s.send(b'\x1bfcQ\x1bfs',b'File Name:')
         a=self.directory/'EIGHT.TXT'
-        s.send(str(a).encode()+b'\r');s.file_is(a,b'Q\r\n')
+        s.send(str(a).encode()+b'\r');s.file_is(a,b'Q\n')
         s.exit()
 
     def test_reference_like_initial_screen(self):
@@ -376,7 +438,7 @@ class UITests(unittest.TestCase):
         s.send(b'y',b'Replace all in document?')
         s.send(b'y',b'3 replacements.')
         s.send(b'\r\x1bfs')
-        s.file_is(a,b'catcat concatenate catcat\r\ncatcat\r\n')
+        s.file_is(a,b'catcat concatenate catcat\ncatcat\n')
         s.send(b'\x1b[1;5H\x1b[1;6F\x1b[3~\x1bfs')
         s.file_is(a,b'')
         s.exit()

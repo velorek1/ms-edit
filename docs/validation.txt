@@ -1,10 +1,11 @@
-make: Entering directory '/home/xankaisen/Documents/Codex/2026-10-19/tie/outputs/msedit-linux'
+make: Entering directory '/home/xankaisen/Documents/Codex/2026-10-20/creo/work/ms-edit'
+cc -std=c89 -pedantic -Wall -Wextra -Werror -O2 -Isrc tests/test_core.c src/buffer.c src/utf8.c -o build/test-core
 cd build && ./test-storage
 PASS: disk-backed 1 MiB, cross-64KiB replacement, append, delete, save, reload
 ./build/test-files
 PASS: Wildcard matching, paths, enumeration, refresh failure
 ./build/test-core
-PASS: buffer, search, CRLF, tabs, 64 KiB boundary, binary I/O, 8000 random edits (150283322 checks)
+PASS: buffer, search, CRLF, tabs, 64 KiB boundary, binary I/O, 8000 random edits (150511360 checks)
 ./build/test-failures
 PASS: write/close/rename/rollback failures, readonly, permissions, allocation atomicity
 ./build/test-cli
@@ -27,6 +28,11 @@ test_readonly_protects_disk (test_ui.UITests.test_readonly_protects_disk) ... ok
 test_reference_like_initial_screen (test_ui.UITests.test_reference_like_initial_screen) ... ok
 test_reopening_document_preserves_unsaved_changes (test_ui.UITests.test_reopening_document_preserves_unsaved_changes) ... ok
 test_replace_all_whole_word_and_empty_file (test_ui.UITests.test_replace_all_whole_word_and_empty_file) ... ok
+test_scrollbar_binary_rows (test_ui.UITests.test_scrollbar_binary_rows) ... ok
+test_scrollbar_drag_endpoints_and_release (test_ui.UITests.test_scrollbar_drag_endpoints_and_release) ... ok
+test_scrollbar_empty_short_split_and_resize (test_ui.UITests.test_scrollbar_empty_short_split_and_resize) ... ok
+test_scrollbar_smallest_split (test_ui.UITests.test_scrollbar_smallest_split) ... ok
+test_scrollbar_track_arrows_and_empty (test_ui.UITests.test_scrollbar_track_arrows_and_empty) ... ok
 test_selector_filter_directory_and_readonly (test_ui.UITests.test_selector_filter_directory_and_readonly) ... ok
 test_selector_horizontal_buttons_cancel_without_opening (test_ui.UITests.test_selector_horizontal_buttons_cancel_without_opening) ... ok
 test_split_shared_document_independent_cursors (test_ui.UITests.test_split_shared_document_independent_cursors) ... ok
@@ -38,7 +44,7 @@ test_wildcard_startup_opens_multiple_documents (test_ui.UITests.test_wildcard_st
 test_xterm_key_variants_and_x10_mouse (test_ui.UITests.test_xterm_key_variants_and_x10_mouse) ... ok
 
 ----------------------------------------------------------------------
-Ran 26 tests in 0.527s
+Ran 31 tests in 0.506s
 
 OK
-make: Leaving directory '/home/xankaisen/Documents/Codex/2026-10-19/tie/outputs/msedit-linux'
+make: Leaving directory '/home/xankaisen/Documents/Codex/2026-10-20/creo/work/ms-edit'

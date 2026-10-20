@@ -1,22 +1,23 @@
-# Procedencia del análisis
+# Origin of the analysis
 
-Esta entrega deriva del paquete `msedit-re-0.3.1-linux-20261012.zip` del trabajo
-anterior de Javier y Raúl. La síntesis del README se ha cotejado con sus archivos
-`analysis/manifest.json`, `analysis/stub-verification.json` y `docs/RE_NOTES.md`.
-Los resultados de ingeniería inversa se describen como históricos: no son nuevas
-pruebas de la versión Linux ni una afirmación de haber recuperado todo el fuente.
+This release descends from `msedit-re-0.3.1-linux-20261012.zip`, produced during
+Javier and Raúl's earlier work. The historical summary in the README was checked
+against that package's `analysis/manifest.json`, `analysis/stub-verification.json`
+and `docs/RE_NOTES.md`. These are historical reverse-engineering results, not new
+Linux tests or a claim that all original source code has been recovered.
 
-Se incluyen dos registros históricos reducidos a datos y resultados en
-`research-manifest.json` y `stub-verification.json`. No contienen el ejecutable
-ni permiten repetir el desempaquetado sin la referencia original. Las herramientas
-DOS y sus pruebas ya no forman parte del código de esta versión.
+Two reduced historical records, `research-manifest.json` and
+`stub-verification.json`, contain data and results. They do not contain the
+executable and cannot reproduce decompression without the original reference.
+DOS tools and their tests are no longer part of this Linux source distribution.
 
-El análisis inicial distinguió reconstrucción de bytes, desempaquetado EXEPACK,
-extracción de recursos e implementación nueva. El código del editor no es una
-traducción literal completa del ejecutable. Las estructuras del búfer, las vistas
-y la capa Linux fueron diseñadas para esta implementación.
+The initial analysis distinguished byte reconstruction, EXEPACK decompression,
+resource extraction and new implementation. The editor is not a complete literal
+translation of the executable. Its buffers, views and Linux backend were designed
+for this implementation.
 
-La limpieza 0.4 no intenta cambiar las convenciones de guardado ni completar
-Unicode, deshacer, impresión o persistencia. Sus cambios funcionales son ayuda
-integrada y Escape para salir, además de retirar opciones y convenciones de
-rutas exclusivas de DOS.
+The 0.4 cleanup added integrated help and Escape-based exit, and removed DOS-only
+options and path conventions. It retained the previous save conventions.
+Version 0.5 changes text saving to LF and adds proportional, draggable vertical
+scrollbars. Neither release completes Unicode, undo, printing or persistent
+settings.

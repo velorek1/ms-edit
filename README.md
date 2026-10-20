@@ -2,7 +2,7 @@
 
 A Linux terminal text editor inspired by **MS-DOS Editor 2.0.026**.
 
-Version **0.4**, released on 19 October 2026, based on the 0.3.1-dev release. It retains the original editor's menus, mouse selection, multiple documents and split windows. The implementation is new and written in C; it is neither Microsoft's original source code nor a complete decompilation or exact clone of the original program.
+Version **0.5**, prepared on 20 October 2026, based on the published 0.4 release. It retains the original editor's menus, mouse selection, multiple documents and split windows. The implementation is new and written in C; it is neither Microsoft's original source code nor a complete decompilation or exact clone of the original program.
 
 ## Building and running
 
@@ -94,7 +94,8 @@ Binary view widths are limited to 1021 bytes. Very large numeric arguments are n
 
 ## Behaviour and known limitations
 
-- **Normal text-mode saving converts line endings to CRLF and appends a final newline if a non-empty document does not already have one.** This preserves the behaviour of version 0.3.1; this release does not switch to LF line endings. Use binary mode when you need to preserve the exact original bytes and line endings.
+- **Text-mode saving converts CRLF to LF and keeps existing LF.** Enter inserts LF. Non-empty documents without a final LF still get one on save; empty documents remain empty. Standalone CR bytes are preserved as data. Binary mode preserves every byte without conversion. See [exact save rules](docs/buffer.md#loading-and-saving).
+- **Vertical scrollbars show the visible fraction and position** using Unicode `█` (CP437 219) over `▓` (CP437 178). Drag the thumb, click the track or use its arrows. Scrolling places the cursor at the first visible line and clears the selection, matching the previous scrollbar click behavior.
 - Up to nine documents can be open simultaneously, with a maximum size of 16 MiB per document. File paths are limited to 259 bytes. Undo and redo are not implemented.
 - UTF-8 and Spanish characters are supported, with CP437 conversion for files that are not valid UTF-8. Full support for grapheme clusters, combining characters, emoji and every terminal display width is not guaranteed. Case-insensitive searching does not implement all Unicode cases.
 - Tab width and colours are configurable for the current session, but settings are not saved between sessions. Printing remains disabled.
@@ -133,6 +134,9 @@ Version 0.4 removes `dos.c`, Borland-specific code paths, `huge` pointers, DOS d
 
 The help system is now embedded directly in the C source code and no longer looks for `EDIT.HLP`. Escape-based exit reuses the same exit and confirmation logic as Alt+X, avoiding duplicated save-handling code.
 
+For a guided explanation of every source and header file, including functions,
+data flow and design choices, start with [Learning the source](docs/README.md).
+
 ### Source code organisation
 
 | File | Responsibility |
@@ -145,7 +149,11 @@ The help system is now embedded directly in the C source code and no longer look
 | `src/utf8.c` | Character decoding and conversion |
 | `tests/` | C tests and real interface tests using a pseudo-terminal |
 
-![Integrated help at 75×24](docs/help.png)
+![Integrated help from version 0.4 at 75×24 (historical capture)](docs/help.png)
+
+The historical screenshot predates the LF save policy in 0.5.
+
+![Version 0.5 scrollbar at the top and after dragging](docs/scrollbar.png)
 
 ## Authorship and credits
 
@@ -161,15 +169,15 @@ Raúl's separate C-EDIT project is independent of this repository. This release 
 
 Microsoft retains the rights to its original software. This project is neither sponsored nor endorsed by Microsoft. See [NOTICE.txt](NOTICE.txt).
 
-No distribution licence has yet been selected for the new code. This repository therefore does not claim a licence on behalf of its human contributors.
+The published repository includes an [MIT license](LICENSE), copyright 2026 Raúl Sanguiao.
 
 ## Validation
 
-Version 0.4 was compiled with GCC 13.3.0 on Linux using strict C89 and the following flags:
+Version 0.5 was compiled with GCC 13.3.0 on Linux using strict C89 and the following flags:
 
 `-pedantic -Wall -Wextra -Werror -O2`
 
-All **five C test executables** and **26 Python interface tests** pass.
+All **five C test executables** and **31 Python interface tests** pass.
 
 The tests cover:
 
@@ -180,7 +188,7 @@ The tests cover:
 - Searching and replacing
 - Text selection
 - Multiple views
-- Mouse interaction
+- Mouse interaction, proportional scrollbar dragging, release and endpoints
 - Terminal resizing
 - Integrated help
 - Escape-based exit with save, cancel and discard options

@@ -1,4 +1,4 @@
-/* MS-EDIT Linux 0.4. Original behavior is documented separately.
+/* MS-EDIT Linux 0.5. Original behavior is documented separately.
  * This is new source, not recovered Microsoft source or a matching decompile.
  */
 #include "buffer.h"
@@ -218,11 +218,46 @@ static void ensure_visible(Buffer *b)
     if (col>=b->left+(unsigned)(screen_cols-2)) b->left=col-(unsigned)(screen_cols-3);
 }
 
+/* Geometry uses logical lines (binary rows in binary mode), not bytes.
+ * The thumb covers the visible fraction; its travel reaches both endpoints. */
+typedef struct {
+    int start,size,travel;
+    unsigned long maximum;
+} Scrollbar;
+
+static Scrollbar scrollbar(Buffer *b,int first,int last)
+{
+    Scrollbar bar;
+    unsigned long total=b->binary_width?buf_len(b)/b->binary_width+1:b->newlines+1;
+    unsigned long top=buf_line_number(b,b->top)-1;
+    int track=last-first-2,height=last-first;
+    bar.maximum=total>(unsigned long)height?total-height:0;
+    if (track<=0) {
+        bar.start=first+2;bar.size=bar.travel=0;return bar;
+    }
+    bar.size=bar.maximum?(int)((unsigned long)track*height/total):track;
+    if (bar.size<1) bar.size=1;
+    bar.travel=track-bar.size;
+    bar.start=first+2+(bar.maximum?
+        (int)(lower(top,bar.maximum)*(unsigned long)bar.travel/bar.maximum):0);
+    return bar;
+}
+
+static void scroll_to(Buffer *b,unsigned long line)
+{
+    unsigned long current_line=buf_line_number(b,b->top)-1;
+    while (current_line<line) { b->top=buf_next_line(b,b->top);current_line++; }
+    while (current_line>line) { b->top=buf_prev_line(b,b->top);current_line--; }
+    /* Keep the cursor visible, as with the existing scrollbar click behavior. */
+    b->cursor=b->anchor=b->top;preferred_valid=0;
+}
+
 static void draw_pane(int first,int last,int is_active)
 {
     Buffer *b=active();
     unsigned long p,end,next,col,stop,lo,hi,start,len,code=0;
     int y,x,ch,attr;
+    Scrollbar bar;
     char title[320],display_path[ED_PATH];
     ensure_visible(b);
     strcpy(display_path,*b->path?b->path:"Untitled");
@@ -234,7 +269,9 @@ static void draw_pane(int first,int last,int is_active)
     fill(1,first+1,screen_cols-2,last-first,' ',normal_attr);
     text((screen_cols-(int)strlen(title))/2,first,title,menu_attr,screen_cols-4);
     cell(screen_cols-1,first+1,24,border_attr);cell(screen_cols-1,last,25,border_attr);
-    fill(screen_cols-1,first+2,1,last-first-2,219,border_attr);
+    bar=scrollbar(b,first,last);
+    fill(screen_cols-1,first+2,1,last-first-2,178,border_attr);
+    fill(screen_cols-1,bar.start,1,bar.size,219,border_attr);
     selection(b,&lo,&hi); p=b->top; len=buf_len(b); cx=1;cy=first+1;
     for (y=first+1;y<=last;y++) {
         start=p; end=buf_line_end(b,p); col=0;
@@ -823,7 +860,7 @@ static void help(void)
         "Options: tab stops and colors (current session only)",
         "Open: wildcard filter, directories, read-only, binary",
         "Dialogs: Tab/Shift+Tab, arrows, Enter; Esc cancels",
-        "Text saves use CRLF. Binary mode preserves bytes.",
+        "Text saves use LF. Binary mode preserves bytes.",
         "No undo/redo. Clipboard is internal to this editor."
     };
     int x,y,k,i;
@@ -916,7 +953,7 @@ static void command(int c)
         break;
     case C_HELP:help();break;
     case C_ABOUT:
-        message(" About ","MS-EDIT Linux 0.4 - by Kai (OpenAI LLM)");break;
+        message(" About ","MS-EDIT Linux 0.5 - by Kai (OpenAI LLM)");break;
     }
     preferred_valid=0;
 }
@@ -1053,7 +1090,7 @@ static void edit_key(int k)
             }
         }
         e=replace_active(b,lo,hi-lo,NULL,0);error(e);
-    } else if (k==13 && !b->binary_width) insert_bytes((ConstBytePtr)"\r\n",2);
+    } else if (k==13 && !b->binary_width) insert_bytes((ConstBytePtr)"\n",1);
     else if ((k>=32 && k<=255) || k==9 || k==14 || k==15 || (b->binary_width && k==13)) {
         ch=(unsigned char)k;
         end=buf_line_end(b,lo);
@@ -1065,9 +1102,10 @@ static void edit_key(int k)
 
 static void mouse_main(void)
 {
-    static int drag=0;
+    static int drag=0,grab=0;
     Buffer *b;
     unsigned long p,col;
+    Scrollbar bar;
     int x=mouse_event.x,y=mouse_event.y,i,first,last,row;
     if (mouse_event.released&1) { drag=0;return; }
     if (mouse_event.pressed&1) {
@@ -1085,15 +1123,29 @@ static void mouse_main(void)
         if (y>=4 && y<=screen_rows-5) split_y=y;
         load_view(focused);return;
     }
-    if (drag!=1) return;
+    if (drag!=1 && drag!=3) return;
     b=active();first=focused?split_y:1;
     last=view_count==1 || focused?screen_rows-2:split_y-1;
-    if (x==screen_cols-1) {
-        if (!(mouse_event.pressed&1)) return;
-        if (y<=first+1) b->top=buf_prev_line(b,b->top);
-        else if (y>=last) b->top=buf_next_line(b,b->top);
-        else b->top=buf_line_start(b,buf_len(b)*(unsigned long)(y-first-1)/(unsigned long)(last-first));
-        b->cursor=b->anchor=b->top;preferred_valid=0;drag=0;return;
+    if (drag==3 || (x==screen_cols-1 && (mouse_event.pressed&1))) {
+        bar=scrollbar(b,first,last);
+        if (mouse_event.pressed&1) {
+            if (y<=first+1 || y>=last) {
+                p=buf_line_number(b,b->top)-1;
+                if (y<=first+1) p=p?p-1:0;
+                else if (p<bar.maximum) p++;
+                scroll_to(b,lower(p,bar.maximum));drag=0;return;
+            }
+            if (y>=bar.start && y<bar.start+bar.size) {
+                grab=y-bar.start;drag=3;return;
+            }
+            grab=bar.size/2;drag=3;
+        }
+        row=y-first-2-grab;
+        if (row<0) row=0;
+        if (row>bar.travel) row=bar.travel;
+        scroll_to(b,bar.travel?
+            bar.maximum*(unsigned long)row/(unsigned long)bar.travel:0);
+        return;
     }
     if (y<=first) { b->top=buf_prev_line(b,b->top);y=first+1; }
     if (y>last) { b->top=buf_next_line(b,b->top);y=last; }
@@ -1177,13 +1229,13 @@ static void handle(int k)
 
 static void usage(void)
 {
-    puts("MS-EDIT Linux 0.4 - by Kai (OpenAI LLM)");
+    puts("MS-EDIT Linux 0.5 - by Kai (OpenAI LLM)");
     puts("Usage: ./editr [-B] [-R|-W] [-<width>] [--] [file ...]");
     puts("-B monochrome; -R read-only; -W writable (for following files).");
     puts("-<width> binary view 1..1021; -0 text. Up to 9 files, 16 MiB each.");
     puts("-h, --help show this summary. F1 opens built-in help in the editor.");
     puts("Esc or Alt+X exits, asking about unsaved changes.");
-    puts("Text saves use CRLF; binary mode preserves bytes.");
+    puts("Text saves use LF; binary mode preserves bytes.");
     puts("Large documents use TEMP/TMP disk backing.");
 }
 

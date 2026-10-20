@@ -8,7 +8,9 @@ static unsigned checks;
 
 static void check_bytes(const Buffer *b,const unsigned char *s,unsigned long n)
 {
-    unsigned long i;
+    unsigned long i,lines=0;
+    for (i=0;i<n;i++) if (s[i]=='\n') lines++;
+    CHECK(b->newlines==lines);
     CHECK(buf_len(b)==n);
     for (i=0;i<n;i++) CHECK(buf_get(b,i)==s[i]);
 }
@@ -98,8 +100,8 @@ static void boundary_and_io(void)
 
 static void text_save_rules(void)
 {
-    static const char *input[]={"","abc","a\nb\n","a\rb\r","a\tb","a\r\nb\r\n"};
-    static const char *expected[]={"","abc\r\n","a\r\nb\r\n","a\rb\r\n","a\tb\r\n","a\r\nb\r\n"};
+    static const char *input[]={"","abc","a\nb\n","a\rb\r","a\tb","a\r\nb\r\n","a\r\nb\nc","\r\n","\n\n"};
+    static const char *expected[]={"","abc\n","a\nb\n","a\rb\r\n","a\tb\n","a\nb\n","a\nb\nc\n","\n","\n\n"};
     Buffer b,c;unsigned i;
     for (i=0;i<sizeof(input)/sizeof(input[0]);i++) {
         buf_init(&b);buf_init(&c);
@@ -110,6 +112,28 @@ static void text_save_rules(void)
         buf_free(&b);buf_free(&c);
     }
     remove("build/TEXT.TXT");
+}
+
+static void large_text_save(void)
+{
+    Buffer b,c;
+    BytePtr bytes;
+    unsigned long i,n=110000UL;
+    buf_init(&b);buf_init(&c);
+    bytes=ed_alloc(n);CHECK(bytes!=NULL);
+    memset(bytes,'x',(size_t)n);
+    bytes[4095]='\r';bytes[4096]='\n';bytes[n-1]='\n';
+    CHECK(buf_replace(&b,0,0,bytes,n)==ED_OK);
+    CHECK(b.newlines==2);
+    CHECK(buf_save(&b,"build/LF.TXT")==ED_OK);
+    CHECK(buf_load(&c,"build/LF.TXT",0,0)==ED_OK);
+    CHECK(buf_len(&c)==n-1 && c.newlines==2);
+    for (i=0;i<n-1;i++) CHECK(buf_get(&c,i)==bytes[i<4095?i:i+1]);
+    b.binary_width=16;
+    CHECK(buf_save(&b,"build/LF.TXT")==ED_OK);
+    CHECK(buf_load(&c,"build/LF.TXT",0,16)==ED_OK);
+    check_bytes(&c,bytes,n);
+    remove("build/LF.TXT");ed_free(bytes);buf_free(&b);buf_free(&c);
 }
 
 static void randomized(void)
@@ -136,7 +160,7 @@ static void randomized(void)
 
 int main(void)
 {
-    basic();tabs_binary();boundary_and_io();text_save_rules();randomized();
+    basic();tabs_binary();boundary_and_io();text_save_rules();large_text_save();randomized();
     printf("PASS: buffer, search, CRLF, tabs, 64 KiB boundary, binary I/O, 8000 random edits (%u checks)\n",checks);
     return 0;
 }
