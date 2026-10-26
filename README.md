@@ -1,4 +1,4 @@
-# MS-EDIT Linux
+# MS-EDIT Linux (AI PROJECT)
 
 A Linux terminal text editor inspired by **MS-DOS Editor 2.0.026**.
 
